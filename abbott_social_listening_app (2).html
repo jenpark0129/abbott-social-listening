@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Abbott Nutrition — Social Listening Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#002D72;--navy2:#001D4E;--navy3:#00388F;
+  --red:#D0021B;
+  --bg:#0C1929;--panel:#111E30;--card:#172234;--card2:#1E2D40;
+  --border:#243348;--border2:#2E4060;
+  --text:#E2EAF4;--muted:#6B85A8;--dim:#3D5070;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'Inter',sans-serif;
+  --r:10px;--rl:14px;
+}
+html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px;overflow:hidden}
+
+/* ── API KEY SCREEN ── */
+#key-screen{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  z-index:1000;
+}
+.key-box{
+  background:var(--card);border:1px solid var(--border2);border-radius:var(--rl);
+  padding:40px 44px;width:480px;max-width:94vw;
+}
+.key-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.key-badge{background:var(--red);color:#fff;font-size:12px;font-weight:700;padding:5px 11px;border-radius:6px;letter-spacing:.06em}
+.key-title{font-size:15px;font-weight:600;color:var(--text)}
+.key-box h2{font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px}
+.key-box p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:24px}
+.key-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px}
+.key-input-wrap{position:relative;margin-bottom:10px}
+.key-input{
+  width:100%;background:var(--card2);border:1px solid var(--border2);
+  border-radius:8px;padding:11px 44px 11px 14px;font-size:13px;
+  font-family:var(--mono);color:var(--text);outline:none;
+  transition:border-color .15s;
+}
+.key-input:focus{border-color:#7EB8FF}
+.key-eye{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:var(--muted);
+  font-size:16px;padding:2px;
+}
+.key-eye:hover{color:var(--text)}
+.key-hint{font-size:11px;color:var(--dim);margin-bottom:20px;line-height:1.5}
+.key-hint a{color:#7EB8FF;text-decoration:none}
+.key-hint a:hover{text-decoration:underline}
+.key-btn{
+  width:100%;background:var(--navy3);border:none;border-radius:8px;
+  padding:12px;font-size:13px;font-weight:600;color:#fff;
+  cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.key-btn:hover{background:#004ABF}
+.key-btn:disabled{background:var(--dim);cursor:not-allowed}
+.key-err{background:rgba(208,2,27,.1);border:1px solid rgba(208,2,27,.25);border-radius:7px;padding:9px 12px;font-size:12px;color:#F87171;margin-bottom:14px;display:none}
+.key-security{
+  margin-top:18px;padding:12px 14px;background:rgba(126,184,255,.06);
+  border:1px solid rgba(126,184,255,.12);border-radius:8px;
+  font-size:11px;color:var(--muted);line-height:1.6;
+}
+.key-security i{color:#7EB8FF;font-size:13px;vertical-align:-2px;margin-right:4px}
+
+/* ── APP LAYOUT ── */
+#app{display:none;height:100vh;overflow:hidden;flex-direction:row}
+#app.visible{display:flex}
+.sidebar{width:210px;flex-shrink:0;background:var(--navy2);display:flex;flex-direction:column}
+.sb-logo{padding:16px 16px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-brand{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#7EB8FF;margin-bottom:2px}
+.sb-name{font-size:13px;font-weight:600;color:#fff}
+.sb-tag{font-size:10px;color:rgba(255,255,255,.35);margin-top:1px}
+.nav{padding:8px 0;flex:1}
+.nav-sec{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:8px 15px 3px}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 15px;cursor:pointer;border-left:3px solid transparent;color:rgba(255,255,255,.45);font-size:12px;font-weight:500;transition:all .15s}
+.ni:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.75)}
+.ni.active{border-left-color:#7EB8FF;background:rgba(126,184,255,.1);color:#7EB8FF}
+.ni i{font-size:14px;width:16px;text-align:center}
+.ni .nb{margin-left:auto;font-size:9px;background:#D0021B;color:#fff;padding:2px 5px;border-radius:5px;font-weight:700;display:none}
+.sb-foot{padding:10px 15px;border-top:1px solid rgba(255,255,255,.06)}
+.sb-foot-row{display:flex;align-items:center;justify-content:space-between}
+.live-row{display:flex;align-items:center;gap:6px}
+.ld{width:6px;height:6px;border-radius:50%;background:#22C55E;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.lt{font-size:10px;color:rgba(255,255,255,.35)}
+.key-change-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);font-size:10px;font-family:var(--sans);padding:0;transition:color .15s}
+.key-change-btn:hover{color:rgba(255,255,255,.7)}
+
+/* ── MAIN AREA ── */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0}
+.ph{padding:18px 24px 14px;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0}
+.ph h1{font-size:18px;font-weight:700;color:var(--text);margin-bottom:3px}
+.ph p{font-size:12px;color:var(--muted)}
+.pa{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:12px;font-weight:600;border:1px solid var(--border2);cursor:pointer;background:var(--card2);color:var(--text);transition:all .15s;font-family:var(--sans)}
+.btn:hover{background:var(--card)}
+.btn.primary{background:var(--navy3);border-color:var(--navy3);color:#fff}
+.btn.primary:hover{background:#004ABF}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.lu{font-size:10px;color:var(--dim);font-family:var(--mono)}
+.pc{padding:18px 24px;flex:1}
+.page{display:none}
+.page.active{display:block}
+
+/* ── DASHBOARD ── */
+.dgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.dcard{background:var(--card);border:1px solid var(--border2);border-radius:var(--rl);padding:14px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.dcard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.dcard.c1::before{background:#7EB8FF}
+.dcard.c2::before{background:#34D399}
+.dcard.c3::before{background:#A78BFA}
+.dcard:hover{border-color:var(--border2);background:var(--card2)}
+.dch{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px}
+.dci{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px}
+.dci.b1{background:rgba(126,184,255,.1)}.dci.b2{background:rgba(52,211,153,.1)}.dci.b3{background:rgba(167,139,250,.1)}
+.dcn{font-size:12px;font-weight:600;color:var(--text)}.dcs{font-size:10px;color:var(--muted);margin-top:1px}
+.dstats{display:flex;gap:8px;margin-bottom:10px}
+.dst{flex:1;background:var(--bg);border-radius:6px;padding:6px 8px}
+.dsn{font-size:17px;font-weight:700;font-family:var(--mono)}
+.dsl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.chip{font-size:10px;font-weight:600;padding:2px 8px;border-radius:8px}
+.chip.idle{background:rgba(255,255,255,.05);color:var(--dim)}
+.chip.running{background:rgba(126,184,255,.12);color:#7EB8FF}
+.chip.done{background:rgba(34,197,94,.1);color:#22C55E}
+.chip.alert{background:rgba(208,2,27,.1);color:#F87171}
+.dcf{display:flex;align-items:center;justify-content:space-between}
+
+.fl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.feed{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto}
+.fi{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start}
+.fd{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.fd.pos{background:#22C55E}.fd.neg{background:#EF4444}.fd.neu{background:#94A3B8}.fd.trend{background:#A78BFA}.fd.idea{background:#FBBF24}
+.ft{font-size:12px;line-height:1.5;color:var(--text);flex:1}
+.fs2{font-size:10px;color:var(--dim);font-family:var(--mono);margin-top:2px}
+.ftime{font-size:10px;color:var(--dim);font-family:var(--mono);flex-shrink:0}
+.fempty{text-align:center;padding:24px;color:var(--muted);font-size:12px}
+.fempty i{font-size:24px;display:block;margin-bottom:6px;color:var(--dim)}
+
+/* ── AGENT DETAIL ── */
+.adh{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--card);border:1px solid var(--border2);border-radius:var(--rl);margin-bottom:14px}
+.adi{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.adi.b1{background:rgba(126,184,255,.1)}.adi.b2{background:rgba(52,211,153,.1)}.adi.b3{background:rgba(167,139,250,.1)}
+.adm{flex:1;min-width:0}
+.adt{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px}
+.add{font-size:12px;color:var(--muted);line-height:1.55}
+.sc{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.sc span{font-size:10px;font-weight:500;background:var(--card2);border:1px solid var(--border);color:var(--muted);padding:2px 8px;border-radius:6px;font-family:var(--mono)}
+
+.plog{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;line-height:1.8;max-height:100px;overflow-y:auto;margin-bottom:12px;display:none}
+.ll{display:flex;gap:8px}.lt2{color:var(--dim)}.lm{color:var(--muted)}.lm.a{color:#7EB8FF}.lm.d{color:#22C55E}.lm.e{color:#F87171}
+
+.tcol{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px}
+.rp{background:var(--card);border:1px solid var(--border2);border-radius:var(--rl);overflow:hidden;margin-bottom:12px}
+.rph{padding:10px 14px;background:var(--card2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.rpt{font-size:11px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
+.rpb{padding:14px;max-height:360px;overflow-y:auto}
+
+.sbar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.sbar-lbl{font-size:11px;font-weight:500;width:56px;color:var(--muted)}
+.sbar-tr{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.sbar-f{height:100%;border-radius:3px;transition:width .5s ease}
+.bp{background:#22C55E}.bn{background:#EF4444}.bnu{background:#64748B}
+.sbar-pct{font-size:11px;font-family:var(--mono);color:var(--text);width:30px;text-align:right}
+
+.tc{background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.tr{font-size:10px;font-weight:600;color:var(--dim);font-family:var(--mono);margin-bottom:2px}
+.tt{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px}
+.td{font-size:11px;color:var(--muted);line-height:1.5}
+.tb{height:2px;border-radius:1px;margin-top:6px;background:#7EB8FF}
+
+.rv{padding:8px 0;border-bottom:1px solid var(--border)}
+.rv:last-child{border-bottom:none}
+.rvm{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.rs{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;font-family:var(--mono)}
+.rs.rr{background:rgba(255,86,0,.12);color:#FF5600}
+.rs.rm{background:rgba(236,72,153,.12);color:#EC4899}
+.rs.rc{background:rgba(16,185,129,.12);color:#10B981}
+.rtx{font-size:11px;color:var(--muted);line-height:1.5;font-style:italic}
+
+.spc{background:var(--card);border:1px solid var(--border2);border-radius:var(--rl);overflow:hidden;margin-bottom:10px}
+.spch{padding:8px 12px;background:var(--card2);border-bottom:1px solid var(--border);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.spcb{padding:12px}
+
+.abox{background:rgba(208,2,27,.07);border:1px solid rgba(208,2,27,.2);border-radius:8px;padding:10px 12px;margin-bottom:12px}
+.abt{font-size:11px;font-weight:600;color:#F87171;display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.abx{font-size:11px;color:#FCA5A5;line-height:1.5}
+
+.tabs2{display:flex;gap:2px;background:var(--bg);border-radius:8px;padding:3px;margin-bottom:12px;border:1px solid var(--border)}
+.tab2{flex:1;padding:5px 8px;font-size:11px;font-weight:500;border-radius:6px;cursor:pointer;text-align:center;color:var(--muted);border:none;background:transparent;transition:all .15s;font-family:var(--sans)}
+.tab2.active{background:var(--card);color:var(--text)}
+.tc2{display:none}.tc2.active{display:block}
+
+.comp-card{background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:8px}
+.comp-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.comp-logo-wrap{width:38px;height:38px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:1px solid rgba(255,255,255,.15)}
+.comp-logo{width:30px;height:30px;object-fit:contain}
+.comp-logo-fb{width:38px;height:38px;border-radius:8px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#7EB8FF;flex-shrink:0;border:1px solid var(--border2);letter-spacing:-.5px}
+.comp-name-block{flex:1;min-width:0}
+.comp-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
+.comp-badges{display:flex;gap:5px;flex-wrap:wrap}
+.cbadge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px}
+.s-pos{background:rgba(34,197,94,.12);color:#22C55E}
+.s-neg{background:rgba(239,68,68,.12);color:#F87171}
+.s-mix{background:rgba(251,191,36,.12);color:#FBBF24}
+.t-hi{background:rgba(239,68,68,.12);color:#F87171}
+.t-md{background:rgba(251,191,36,.12);color:#FBBF24}
+.t-lo{background:rgba(34,197,94,.12);color:#22C55E}
+.b-hi{background:rgba(167,139,250,.12);color:#A78BFA}
+.b-md{background:rgba(126,184,255,.12);color:#7EB8FF}
+.b-lo{background:rgba(148,163,184,.12);color:#94A3B8}
+.comp-find{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:5px}
+.comp-q{font-size:11px;color:var(--dim);font-style:italic;border-left:2px solid var(--border2);padding-left:8px;line-height:1.5}
+
+.ts{display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)}
+.ts:last-child{border-bottom:none}
+.tk{font-size:12px;font-weight:600;color:#A78BFA;margin-bottom:2px}
+.tdet{font-size:11px;color:var(--muted);line-height:1.5}
+.tcat{font-size:9px;font-weight:600;padding:1px 6px;border-radius:5px;background:rgba(126,184,255,.1);color:#7EB8FF;margin-left:4px}
+
+.ci{background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:8px;border-left:3px solid}
+.ci-ig{border-color:#E1306C}.ci-nl{border-color:#0077B5}.ci-ca{border-color:#FBBF24}
+.ci-type{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+.ci-text{font-size:12px;color:var(--text);line-height:1.6}
+
+.loading{display:flex;align-items:center;gap:8px;padding:20px;color:var(--muted);font-size:12px;justify-content:center}
+.sp{width:16px;height:16px;border:2px solid var(--border2);border-top-color:#7EB8FF;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:24px;color:var(--muted);font-size:12px}
+.empty i{font-size:22px;display:block;margin-bottom:6px;color:var(--dim)}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+::-webkit-scrollbar-track{background:transparent}
+</style>
+</head>
+<body>
+
+<!-- ── API KEY SCREEN ── -->
+<div id="key-screen">
+  <div class="key-box">
+    <div class="key-logo">
+      <div class="key-badge">ABBOTT</div>
+      <span class="key-title">Social Listening Intelligence</span>
+    </div>
+    <h2>Enter your Anthropic API Key</h2>
+    <p>This app uses Claude AI to fetch and analyse live consumer reviews from Mouths of Mums, Reddit AU, and Chemist Warehouse. Your API key is stored only in your browser's memory and never sent anywhere except Anthropic's servers.</p>
+    <div class="key-label">Anthropic API Key</div>
+    <div class="key-err" id="key-err">Invalid API key. Please check and try again.</div>
+    <div class="key-input-wrap">
+      <input type="password" id="key-input" class="key-input" placeholder="sk-ant-api03-…" spellcheck="false"/>
+      <button class="key-eye" onclick="toggleKeyVis()" id="key-eye-btn" title="Show/hide key">
+        <i class="ti ti-eye" id="key-eye-icon"></i>
+      </button>
+    </div>
+    <div class="key-hint">
+      Don't have a key? Get one at <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a><br/>
+      Note: API calls are charged separately to your Claude subscription.
+    </div>
+    <button class="key-btn" id="key-btn" onclick="submitKey()">
+      <i class="ti ti-arrow-right"></i> Launch dashboard
+    </button>
+    <div class="key-security">
+      <i class="ti ti-shield-check"></i>
+      Your key is held only in memory for this session. It is never saved to disk, logged, or shared. Close the tab to clear it completely.
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN APP ── -->
+<div id="app">
+<nav class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-brand">Abbott Nutrition</div>
+    <div class="sb-name">Social Intelligence</div>
+    <div class="sb-tag">AI Listening Dashboard</div>
+  </div>
+  <div class="nav">
+    <div class="nav-sec">Overview</div>
+    <div class="ni active" id="ni-dashboard" onclick="nav('dashboard')"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+    <div class="nav-sec">AI Agents</div>
+    <div class="ni" id="ni-a1" onclick="nav('a1')"><i class="ti ti-chart-bar"></i> Sentiment & Topics<span class="nb" id="nb1">!</span></div>
+    <div class="ni" id="ni-a2" onclick="nav('a2')"><i class="ti ti-trending-up"></i> Trend & Competitors</div>
+    <div class="ni" id="ni-a3" onclick="nav('a3')"><i class="ti ti-bulb"></i> Content Generator</div>
+  </div>
+  <div class="sb-foot">
+    <div class="sb-foot-row">
+      <div class="live-row"><div class="ld"></div><span class="lt">3 agents ready</span></div>
+      <button class="key-change-btn" onclick="changeKey()" title="Change API key">Change key</button>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page active">
+  <div class="ph">
+    <h1>Social Listening Intelligence</h1>
+    <p>Live monitoring of Abbott Nutrition brands — Mouths of Mums, Reddit AU, Chemist Warehouse</p>
+    <div class="pa">
+      <button class="btn primary" id="btn-all" onclick="runAll()"><i class="ti ti-player-play"></i> Run all agents</button>
+      <span class="lu" id="dash-lu"></span>
+    </div>
+  </div>
+  <div class="pc">
+    <div class="dgrid">
+      <div class="dcard c1" onclick="nav('a1')">
+        <div class="dch"><div class="dci b1">📊</div><div><div class="dcn">Sentiment & Topics</div><div class="dcs">Mouths of Mums · Reddit · Chemist</div></div></div>
+        <div class="dstats">
+          <div class="dst"><div class="dsn" id="d1-pos" style="color:#22C55E">—</div><div class="dsl">Positive</div></div>
+          <div class="dst"><div class="dsn" id="d1-neg" style="color:#EF4444">—</div><div class="dsl">Negative</div></div>
+          <div class="dst"><div class="dsn" id="d1-top" style="color:#7EB8FF">—</div><div class="dsl">Themes</div></div>
+        </div>
+        <div class="dcf"><span class="chip idle" id="ch1">Idle</span><i class="ti ti-arrow-right" style="color:var(--dim);font-size:13px"></i></div>
+      </div>
+      <div class="dcard c2" onclick="nav('a2')">
+        <div class="dch"><div class="dci b2">📈</div><div><div class="dcn">Trend & Competitors</div><div class="dcs">PediaSure rivals · Ensure rivals</div></div></div>
+        <div class="dstats">
+          <div class="dst"><div class="dsn" id="d2-br" style="color:#34D399">—</div><div class="dsl">Brands</div></div>
+          <div class="dst"><div class="dsn" id="d2-tr" style="color:#A78BFA">—</div><div class="dsl">Trends</div></div>
+        </div>
+        <div class="dcf"><span class="chip idle" id="ch2">Idle</span><i class="ti ti-arrow-right" style="color:var(--dim);font-size:13px"></i></div>
+      </div>
+      <div class="dcard c3" onclick="nav('a3')">
+        <div class="dch"><div class="dci b3">💡</div><div><div class="dcn">Content Generator</div><div class="dcs">Insight → Campaign ideas</div></div></div>
+        <div class="dstats">
+          <div class="dst"><div class="dsn" id="d3-id" style="color:#FBBF24">—</div><div class="dsl">Ideas</div></div>
+          <div class="dst"><div class="dsn" id="d3-ca" style="color:#F472B6">—</div><div class="dsl">Campaigns</div></div>
+        </div>
+        <div class="dcf"><span class="chip idle" id="ch3">Idle</span><i class="ti ti-arrow-right" style="color:var(--dim);font-size:13px"></i></div>
+      </div>
+    </div>
+    <div class="fl">Live intelligence feed</div>
+    <div class="feed" id="feed">
+      <div class="fempty"><i class="ti ti-broadcast"></i>Run agents to populate the feed</div>
+    </div>
+  </div>
+</div>
+
+<!-- AGENT 1 -->
+<div id="page-a1" class="page">
+  <div class="ph">
+    <h1>Sentiment & Topic Analysis</h1>
+    <p>AI fetches live reviews from Mouths of Mums, Reddit AU, Chemist Warehouse — classifies and clusters them</p>
+    <div class="pa">
+      <button class="btn primary" id="btn-a1" onclick="runA1()"><i class="ti ti-player-play"></i> Fetch & analyse</button>
+      <button class="btn" onclick="clearA1()"><i class="ti ti-x"></i> Clear</button>
+      <span class="lu" id="a1-lu"></span>
+    </div>
+  </div>
+  <div class="pc">
+    <div class="adh">
+      <div class="adi b1">📊</div>
+      <div class="adm">
+        <div class="adt">Real-time sentiment + topic clustering</div>
+        <div class="add">Searches live consumer discussions about Ensure and PediaSure, classifies each mention as Positive / Negative / Neutral, then groups into ranked topic clusters — surfacing the top 3 parent concerns without any manual reading.</div>
+        <div class="sc"><span>mouthsofmums.com.au</span><span>reddit.com/r/AustralianParents</span><span>chemistwarehouse.com.au</span><span>Ensure · PediaSure · Glucerna</span></div>
+      </div>
+    </div>
+    <div class="plog" id="log1"></div>
+    <div id="a1-alert" style="display:none">
+      <div class="abox"><div class="abt"><i class="ti ti-alert-triangle"></i> Risk alert</div><div class="abx" id="a1-alert-txt"></div></div>
+    </div>
+    <div class="tcol">
+      <div>
+        <div class="rp" style="margin-bottom:12px">
+          <div class="rph"><span class="rpt"><i class="ti ti-chart-bar"></i> Sentiment breakdown</span><span id="a1-cnt" style="font-size:10px;color:var(--dim);font-family:var(--mono)"></span></div>
+          <div class="rpb" id="a1-sent"><div class="empty"><i class="ti ti-message-circle"></i>Run agent to see sentiment</div></div>
+        </div>
+        <div class="rp">
+          <div class="rph"><span class="rpt"><i class="ti ti-layout-list"></i> Top consumer themes</span></div>
+          <div class="rpb" id="a1-topics"><div class="empty"><i class="ti ti-folders"></i>Topic clusters will appear here</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="spc"><div class="spch">Raw reviews sampled</div><div class="spcb" id="a1-revs"><div style="font-size:11px;color:var(--muted)">Reviews will appear after fetch</div></div></div>
+        <div class="spc"><div class="spch">Strategic implication</div><div class="spcb" id="a1-strat"><div style="font-size:11px;color:var(--muted)">AI note will appear here</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AGENT 2 -->
+<div id="page-a2" class="page">
+  <div class="ph">
+    <h1>Trend & Competitor Detection</h1>
+    <p>AI tracks PediaSure and Ensure competitor brands separately — sentiment, buzz, threat level, and strategic windows</p>
+    <div class="pa">
+      <button class="btn primary" id="btn-a2" onclick="runA2()"><i class="ti ti-player-play"></i> Scan competitors & trends</button>
+      <button class="btn" onclick="clearA2()"><i class="ti ti-x"></i> Clear</button>
+      <span class="lu" id="a2-lu"></span>
+    </div>
+  </div>
+  <div class="pc">
+    <div class="adh">
+      <div class="adi b2">📈</div>
+      <div class="adm">
+        <div class="adt">Competitor trend intelligence — PediaSure & Ensure</div>
+        <div class="add">Searches live AU social and retail data for every competitor across both categories. PediaSure rivals (Sustagen Kids, Karicare, Aptamil, Bellamy's) and Ensure rivals (Sustagen Adult, Complan, Optifast, Fortisip) are tracked separately — surfacing sentiment, buzz velocity, threat level, and Abbott's strategic windows.</div>
+        <div class="sc">
+          <span>PediaSure: Sustagen Kids · Karicare · Aptamil · Bellamy's · S-26 Gold</span>
+          <span>Ensure: Sustagen Adult · Complan · Optifast · Fortisip · Enprocal</span>
+          <span>Reddit AU · Mouths of Mums · Chemist Warehouse · Priceline</span>
+        </div>
+      </div>
+    </div>
+    <div class="plog" id="log2"></div>
+    <div class="tabs2">
+      <button class="tab2 active" onclick="ctab('pedia')">👶 PediaSure competitors</button>
+      <button class="tab2" onclick="ctab('ensure')">💪 Ensure competitors</button>
+      <button class="tab2" onclick="ctab('mtrend')">🔺 Market trends</button>
+    </div>
+    <div class="tc2 active" id="ct-pedia">
+      <div class="tcol">
+        <div class="rp"><div class="rph"><span class="rpt"><i class="ti ti-users"></i> PediaSure competitor brands</span><span style="font-size:10px;color:var(--dim)">Sustagen Kids · Karicare · Aptamil · Bellamy's · S-26 Gold</span></div><div class="rpb" id="a2-pcomp"><div class="empty"><i class="ti ti-eye"></i>Run scan to see PediaSure competitors</div></div></div>
+        <div><div class="spc"><div class="spch">👶 PediaSure opportunity</div><div class="spcb" id="a2-popp"><div style="font-size:11px;color:var(--muted)">Will appear after scan</div></div></div></div>
+      </div>
+    </div>
+    <div class="tc2" id="ct-ensure">
+      <div class="tcol">
+        <div class="rp"><div class="rph"><span class="rpt"><i class="ti ti-users"></i> Ensure competitor brands</span><span style="font-size:10px;color:var(--dim)">Sustagen Adult · Complan · Optifast · Fortisip · Enprocal</span></div><div class="rpb" id="a2-ecomp"><div class="empty"><i class="ti ti-eye"></i>Run scan to see Ensure competitors</div></div></div>
+        <div><div class="spc"><div class="spch">💪 Ensure opportunity</div><div class="spcb" id="a2-eopp"><div style="font-size:11px;color:var(--muted)">Will appear after scan</div></div></div></div>
+      </div>
+    </div>
+    <div class="tc2" id="ct-mtrend">
+      <div class="tcol">
+        <div class="rp"><div class="rph"><span class="rpt"><i class="ti ti-trending-up"></i> Rising market trend signals</span></div><div class="rpb" id="a2-trends"><div class="empty"><i class="ti ti-broadcast"></i>Trend signals will appear after scan</div></div></div>
+        <div>
+          <div class="spc"><div class="spch">⚡ Priority action for Abbott</div><div class="spcb" id="a2-action"><div style="font-size:11px;color:var(--muted)">Will appear after scan</div></div></div>
+          <div class="spc"><div class="spch">Market context</div><div class="spcb" id="a2-ctx"><div style="font-size:11px;color:var(--muted)">Will appear after scan</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AGENT 3 -->
+<div id="page-a3" class="page">
+  <div class="ph">
+    <h1>Content Generator</h1>
+    <p>AI converts social listening insights into Instagram captions, newsletter hooks, and campaign angles</p>
+    <div class="pa">
+      <button class="btn primary" id="btn-a3" onclick="runA3()"><i class="ti ti-player-play"></i> Generate content</button>
+      <button class="btn" onclick="clearA3()"><i class="ti ti-x"></i> Clear</button>
+      <span class="lu" id="a3-lu"></span>
+    </div>
+  </div>
+  <div class="pc">
+    <div class="adh">
+      <div class="adi b3">💡</div>
+      <div class="adm">
+        <div class="adt">Insight-to-content ideation</div>
+        <div class="add">Uses findings from Sentiment and Trend agents to generate Instagram captions, newsletter hooks, and campaign angles — grounded in real consumer language and pain points. Run Agent 01 and 02 first for best results.</div>
+        <div class="sc"><span>Feeds from Agent 01 & 02</span><span>Instagram · Newsletter · Campaign</span><span>Ensure · PediaSure · AU market</span></div>
+      </div>
+    </div>
+    <div class="plog" id="log3"></div>
+    <div class="tabs2" style="max-width:380px">
+      <button class="tab2 active" onclick="ctab3('ig')">📱 Instagram</button>
+      <button class="tab2" onclick="ctab3('nl')">📧 Newsletter</button>
+      <button class="tab2" onclick="ctab3('ca')">🎯 Campaign</button>
+    </div>
+    <div class="tc2 active" id="ct3-ig">
+      <div class="rp"><div class="rph"><span class="rpt"><i class="ti ti-brand-instagram"></i> Instagram content ideas</span></div><div class="rpb" id="a3-ig"><div class="empty"><i class="ti ti-camera"></i>Run agent to generate Instagram ideas</div></div></div>
+    </div>
+    <div class="tc2" id="ct3-nl">
+      <div class="rp"><div class="rph"><span class="rpt"><i class="ti ti-mail"></i> Newsletter hooks</span></div><div class="rpb" id="a3-nl"><div class="empty"><i class="ti ti-mail"></i>Run agent to generate newsletter ideas</div></div></div>
+    </div>
+    <div class="tc2" id="ct3-ca">
+      <div class="rp"><div class="rph"><span class="rpt"><i class="ti ti-target"></i> Campaign angles</span></div><div class="rpb" id="a3-ca"><div class="empty"><i class="ti ti-target"></i>Run agent to generate campaign ideas</div></div></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+var API_KEY = sessionStorage.getItem('abbott_api_key') || '';
+// Auto-launch if key already in session
+window.addEventListener('DOMContentLoaded', function() {
+  if (API_KEY) {
+    document.getElementById('key-screen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+  }
+});
+var AD = {a1:null, a2:null, a3:null};
+
+// ── KEY SCREEN ─────────────────────────────────────────
+function toggleKeyVis() {
+  var inp = document.getElementById('key-input');
+  var ico = document.getElementById('key-eye-icon');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    ico.className = 'ti ti-eye-off';
+  } else {
+    inp.type = 'password';
+    ico.className = 'ti ti-eye';
+  }
+}
+
+document.getElementById('key-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') submitKey();
+});
+
+function submitKey() {
+  var val = document.getElementById('key-input').value.trim();
+  var err = document.getElementById('key-err');
+  err.style.display = 'none';
+
+  if (!val) {
+    err.textContent = 'Please enter your Anthropic API key.';
+    err.style.display = '';
+    return;
+  }
+  if (!val.startsWith('sk-ant')) {
+    err.textContent = 'Key should start with sk-ant… Please check and try again.';
+    err.style.display = '';
+    return;
+  }
+
+  API_KEY = val;
+  sessionStorage.setItem('abbott_api_key', val);
+  document.getElementById('key-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+}
+
+function changeKey() {
+  API_KEY = '';
+  document.getElementById('key-input').value = '';
+  document.getElementById('key-err').style.display = 'none';
+  document.getElementById('key-screen').style.display = 'flex';
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('key-btn').disabled = false;
+  document.getElementById('key-btn').innerHTML = '<i class="ti ti-arrow-right"></i> Launch dashboard';
+}
+
+// ── NAVIGATION ─────────────────────────────────────────
+function nav(p) {
+  document.querySelectorAll('.page').forEach(function(e){e.classList.remove('active');});
+  document.querySelectorAll('.ni').forEach(function(e){e.classList.remove('active');});
+  document.getElementById('page-'+p).classList.add('active');
+  var ni = document.getElementById('ni-'+p);
+  if (ni) ni.classList.add('active');
+}
+
+function ctab(n) {
+  var pg = document.getElementById('page-a2');
+  pg.querySelectorAll('.tab2').forEach(function(t){t.classList.remove('active');});
+  pg.querySelectorAll('.tc2').forEach(function(t){t.classList.remove('active');});
+  pg.querySelector('[onclick="ctab(\''+n+'\')"]').classList.add('active');
+  document.getElementById('ct-'+n).classList.add('active');
+}
+
+function ctab3(n) {
+  var pg = document.getElementById('page-a3');
+  pg.querySelectorAll('.tab2').forEach(function(t){t.classList.remove('active');});
+  pg.querySelectorAll('.tc2').forEach(function(t){t.classList.remove('active');});
+  pg.querySelector('[onclick="ctab3(\''+n+'\')"]').classList.add('active');
+  document.getElementById('ct3-'+n).classList.add('active');
+}
+
+// ── HELPERS ────────────────────────────────────────────
+function setChip(id, s) {
+  var el = document.getElementById(id); if (!el) return;
+  var m = {idle:'chip idle',running:'chip running',done:'chip done',alert:'chip alert'};
+  var l = {idle:'Idle',running:'Running…',done:'Done',alert:'Alert'};
+  el.className = m[s]||m.idle; el.textContent = l[s]||s;
+}
+
+function logLine(id, msg, t) {
+  var el = document.getElementById(id); if (!el) return;
+  el.style.display = '';
+  var tm = new Date().toLocaleTimeString('en-AU',{hour12:false});
+  el.innerHTML += '<div class="ll"><span class="lt2">'+tm+'</span><span class="lm '+(t||'')+'">'+msg+'</span></div>';
+  el.scrollTop = el.scrollHeight;
+}
+
+function clrLog(id) {
+  var el = document.getElementById(id);
+  if (el) { el.innerHTML = ''; el.style.display = 'none'; }
+}
+
+function addFeed(type, text, src) {
+  var f = document.getElementById('feed');
+  var em = f.querySelector('.fempty'); if (em) em.remove();
+  var t = new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+  var d = document.createElement('div'); d.className = 'fi';
+  d.innerHTML = '<div class="fd '+type+'"></div><div class="ft">'+text+'<div class="fs2">'+src+'</div></div><div class="ftime">'+t+'</div>';
+  f.insertBefore(d, f.firstChild);
+}
+
+function ldHTML(m) { return '<div class="loading"><div class="sp"></div>'+(m||'Analysing…')+'</div>'; }
+function emHTML(m) { return '<div class="empty"><i class="ti ti-alert-circle"></i>'+m+'</div>'; }
+
+async function callClaude(sys, usr) {
+  var r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': API_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-beta': 'interleaved-thinking-2025-05-14',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1200,
+      system: sys,
+      messages: [{role:'user',content:usr}],
+      tools: [{type:'web_search_20250305',name:'web_search'}]
+    })
+  });
+  if (!r.ok) {
+    var e = await r.json().catch(function(){return {};});
+    throw new Error((e.error&&e.error.message)||'API error '+r.status);
+  }
+  var d = await r.json();
+  return (d.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n');
+}
+
+function parseJSON(raw) {
+  var m = raw.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('No JSON in response');
+  return JSON.parse(m[0]);
+}
+
+// ── RUN ALL ────────────────────────────────────────────
+async function runAll() {
+  var btn = document.getElementById('btn-all');
+  btn.disabled = true;
+  document.getElementById('dash-lu').textContent = 'Running all agents…';
+  await Promise.all([runA1(true), runA2(true), runA3(true)]);
+  document.getElementById('dash-lu').textContent = 'Last run: '+new Date().toLocaleTimeString('en-AU');
+  btn.disabled = false;
+}
+
+// ── AGENT 1 ────────────────────────────────────────────
+async function runA1(silent) {
+  var btn = document.getElementById('btn-a1');
+  if (btn) btn.disabled = true;
+  setChip('ch1','running'); clrLog('log1');
+  if (!silent) nav('a1');
+  ['a1-sent','a1-topics','a1-revs','a1-strat'].forEach(function(id){document.getElementById(id).innerHTML=ldHTML('');});
+  document.getElementById('a1-alert').style.display = 'none';
+
+  logLine('log1','Searching Mouths of Mums for PediaSure & Ensure reviews…','a');
+  var sys = `You are a social listening AI for Abbott Nutrition Australia (brands: Ensure, PediaSure, Glucerna). Search for RECENT consumer reviews and discussions from Mouths of Mums (mouthsofmums.com.au), Reddit Australia (r/AustralianParents, r/australia, r/health), and Chemist Warehouse (chemistwarehouse.com.au).
+Return ONLY valid JSON, no markdown, no backticks:
+{"total_mentions":<n>,"positive":<n>,"negative":<n>,"neutral":<n>,"has_alert":<bool>,"alert_text":"<str>","topics":[{"rank":1,"title":"...","description":"...","pct":<n>},{"rank":2,"title":"...","description":"...","pct":<n>},{"rank":3,"title":"...","description":"...","pct":<n>}],"reviews":[{"source":"reddit|mums|chemist","sentiment":"pos|neg|neu","text":"...","product":"..."},{"source":"reddit|mums|chemist","sentiment":"pos|neg|neu","text":"...","product":"..."},{"source":"reddit|mums|chemist","sentiment":"pos|neg|neu","text":"...","product":"..."},{"source":"reddit|mums|chemist","sentiment":"pos|neg|neu","text":"...","product":"..."}],"strategic_note":"<2 sentences>"}`;
+
+  try {
+    logLine('log1','Scanning Reddit AU nutrition discussions…','a');
+    var raw = await callClaude(sys,'Search for recent Australian consumer reviews and discussions about PediaSure and Ensure. Check Mouths of Mums, Reddit Australia, and Chemist Warehouse. Return JSON analysis.');
+    logLine('log1','Parsing results…','a');
+    var d = parseJSON(raw); AD.a1 = d;
+
+    var total = d.total_mentions||(d.positive+d.negative+d.neutral)||1;
+    var pp = Math.round(d.positive/total*100);
+    var np = Math.round(d.negative/total*100);
+    var nup = 100-pp-np;
+
+    document.getElementById('a1-sent').innerHTML =
+      '<div class="sbar-row"><span class="sbar-lbl">Positive</span><div class="sbar-tr"><div class="sbar-f bp" style="width:'+pp+'%"></div></div><span class="sbar-pct" style="color:#22C55E">'+pp+'%</span></div>'+
+      '<div class="sbar-row"><span class="sbar-lbl">Negative</span><div class="sbar-tr"><div class="sbar-f bn" style="width:'+np+'%"></div></div><span class="sbar-pct" style="color:#EF4444">'+np+'%</span></div>'+
+      '<div class="sbar-row"><span class="sbar-lbl">Neutral</span><div class="sbar-tr"><div class="sbar-f bnu" style="width:'+nup+'%"></div></div><span class="sbar-pct">'+nup+'%</span></div>'+
+      '<div style="font-size:10px;color:var(--dim);font-family:var(--mono);margin-top:8px">Based on '+total+' mentions across 3 platforms</div>';
+    document.getElementById('a1-cnt').textContent = total+' mentions';
+
+    document.getElementById('a1-topics').innerHTML = (d.topics||[]).map(function(t){
+      return '<div class="tc"><div class="tr">#'+t.rank+' theme · '+t.pct+'% of discussions</div><div class="tt">'+t.title+'</div><div class="td">'+t.description+'</div><div class="tb" style="width:'+t.pct+'%"></div></div>';
+    }).join('');
+
+    var srcC = {reddit:'rs rr',mums:'rs rm',chemist:'rs rc'};
+    var srcL = {reddit:'Reddit AU',mums:'Mouths of Mums',chemist:'Chemist Warehouse'};
+    var dotC = {pos:'fd pos',neg:'fd neg',neu:'fd neu'};
+    document.getElementById('a1-revs').innerHTML = (d.reviews||[]).map(function(r){
+      return '<div class="rv"><div class="rvm"><span class="'+(srcC[r.source]||'rs rr')+'">'+(srcL[r.source]||r.source)+'</span><div class="'+(dotC[r.sentiment]||'fd neu')+'" style="flex-shrink:0;width:7px;height:7px;border-radius:50%;display:inline-block"></div><span style="font-size:10px;color:var(--dim)">'+r.product+'</span></div><div class="rtx">"'+r.text+'"</div></div>';
+    }).join('');
+
+    document.getElementById('a1-strat').innerHTML = '<div style="font-size:12px;color:var(--text);line-height:1.6">'+d.strategic_note+'</div>';
+
+    if (d.has_alert && d.alert_text) {
+      document.getElementById('a1-alert').style.display = '';
+      document.getElementById('a1-alert-txt').textContent = d.alert_text;
+      setChip('ch1','alert');
+      document.getElementById('nb1').style.display = '';
+    } else { setChip('ch1','done'); }
+
+    document.getElementById('d1-pos').textContent = pp+'%';
+    document.getElementById('d1-neg').textContent = np+'%';
+    document.getElementById('d1-top').textContent = (d.topics||[]).length;
+    document.getElementById('a1-lu').textContent = 'Updated '+new Date().toLocaleTimeString('en-AU');
+    addFeed('pos','Sentiment scan complete — '+pp+'% positive across '+total+' Abbott mentions','Agent 01 · Sentiment');
+    if (d.topics&&d.topics[0]) addFeed('neu','Top theme: <strong>'+d.topics[0].title+'</strong> — '+d.topics[0].description.substring(0,70)+'…','Agent 01 · Topics');
+    if (d.has_alert) addFeed('neg','⚠ Risk alert: '+d.alert_text,'Agent 01 · Risk monitor');
+    logLine('log1','Analysis complete.','d');
+  } catch(e) {
+    document.getElementById('a1-sent').innerHTML = emHTML(e.message);
+    logLine('log1','Error: '+e.message,'e');
+    setChip('ch1','idle');
+  }
+  if (btn) btn.disabled = false;
+}
+
+function clearA1() {
+  AD.a1=null;
+  ['a1-sent','a1-topics','a1-revs','a1-strat'].forEach(function(id){document.getElementById(id).innerHTML='<div class="empty">Cleared</div>';});
+  document.getElementById('a1-alert').style.display='none';
+  clrLog('log1'); setChip('ch1','idle');
+  document.getElementById('nb1').style.display='none';
+}
+
+// ── AGENT 2 ────────────────────────────────────────────
+async function runA2(silent) {
+  var btn = document.getElementById('btn-a2');
+  if (btn) btn.disabled = true;
+  setChip('ch2','running'); clrLog('log2');
+  if (!silent) nav('a2');
+  ['a2-pcomp','a2-ecomp','a2-trends','a2-popp','a2-eopp','a2-action','a2-ctx'].forEach(function(id){document.getElementById(id).innerHTML=ldHTML('Scanning…');});
+
+  logLine('log2','Scanning PediaSure competitors (Sustagen Kids, Karicare, Aptamil, Bellamy\'s)…','a');
+  var sys = `You are a competitive intelligence AI for Abbott Nutrition Australia.
+PediaSure competitors: Sustagen Kids, Karicare, Aptamil, Bellamy's Organic, S-26 Gold, Nuhist
+Ensure competitors: Sustagen Adult (Hospital), Complan, Optifast, Fortisip (Nutricia), Enprocal, Resource (Nestlé)
+Search for RECENT Australian consumer sentiment, reviews, social discussions about all these brands.
+Return ONLY valid JSON, no markdown, no backticks:
+{"pediasure_competitors":[{"brand":"Sustagen Kids","sentiment":"positive|negative|mixed","buzz_level":"high|medium|low","key_finding":"...","consumer_quote":"...","threat_level":"high|medium|low"},{"brand":"Karicare","sentiment":"...","buzz_level":"...","key_finding":"...","consumer_quote":"...","threat_level":"..."},{"brand":"Aptamil","sentiment":"...","buzz_level":"...","key_finding":"...","consumer_quote":"...","threat_level":"..."},{"brand":"Bellamy's Organic","sentiment":"...","buzz_level":"...","key_finding":"...","consumer_quote":"...","threat_level":"..."},{"brand":"S-26 Gold","sentiment":"...","buzz_level":"...","key_finding":"...","consumer_quote":"...","threat_level":"..."}],"pediasure_opportunity":"2-3 sentences","ensure_competitors":[{"brand":"Sustagen Adult","sentiment":"...","buzz_level":"...","key_finding":"...","consumer_quote":"...","threat_level":"..."},{"brand":"Complan","sentiment":"...","buzz_level":"...","key_finding":"...","consumer_quote":"...","threat_level":"..."},{"brand":"Optifast","sentiment":"...","buzz_level":"...","key_finding":"...","consumer_quote":"...","threat_level":"..."},{"brand":"Fortisip","sentiment":"...","buzz_level":"...","key_finding":"...","consumer_quote":"...","threat_level":"..."},{"brand":"Enprocal","sentiment":"...","buzz_level":"...","key_finding":"...","consumer_quote":"...","threat_level":"..."}],"ensure_opportunity":"2-3 sentences","trends":[{"keyword":"...","category":"pediasure|ensure|both","velocity":"surging|rising|stable","context":"...","opportunity":"..."},{"keyword":"...","category":"...","velocity":"...","context":"...","opportunity":"..."},{"keyword":"...","category":"...","velocity":"...","context":"...","opportunity":"..."},{"keyword":"...","category":"...","velocity":"...","context":"...","opportunity":"..."}],"priority_action":"...","market_context":"..."}`;
+
+  try {
+    logLine('log2','Scanning Ensure competitors (Sustagen Adult, Complan, Optifast, Fortisip)…','a');
+    var raw = await callClaude(sys,"Search for recent Australian consumer reviews and social discussions about: Sustagen Kids, Karicare, Aptamil, Bellamy's for children's nutrition; Sustagen Adult, Complan, Optifast, Fortisip, Enprocal for adult nutrition. Also search for rising AU nutrition trends. Return full JSON.");
+    logLine('log2','Parsing competitor intelligence…','a');
+    var d = parseJSON(raw); AD.a2 = d;
+
+    var sC={positive:'s-pos',negative:'s-neg',mixed:'s-mix'};
+    var tC={high:'t-hi',medium:'t-md',low:'t-lo'};
+    var bC={high:'b-hi',medium:'b-md',low:'b-lo'};
+
+    // Brand domain map for logo lookup
+    var BRAND_DOMAINS = {
+      'Sustagen Kids':'sustagen.com.au','Sustagen Adult':'sustagen.com.au',
+      'Karicare':'karicare.com.au','Aptamil':'aptamil.com.au',
+      "Bellamy's Organic":'bellamysorganic.com.au','S-26 Gold':'wyethnutrition.com',
+      'Nuhist':'nuhist.com.au','Complan':'complan.co.uk',
+      'Optifast':'optifast.com.au','Fortisip':'nutricia.com.au',
+      'Enprocal':'enprocal.com.au','Resource':'nestlehealthscience.com.au'
+    };
+    function logoHTML(brand) {
+      var domain = BRAND_DOMAINS[brand];
+      var initials = brand.replace(/[^A-Za-z ]/g,'').split(' ').map(function(w){return w[0]||'';}).join('').substring(0,2).toUpperCase();
+      if (!domain) return '<div class="comp-logo-fb">'+initials+'</div>';
+      var src = 'https://logo.clearbit.com/'+domain;
+      return '<div class="comp-logo-wrap"><img class="comp-logo" src="'+src+'" alt="'+brand+'" onerror="this.parentNode.outerHTML='<div class=\\"comp-logo-fb\\">'+initials+'</div>'"></div>';
+    }
+    function renderComp(list) {
+      return (list||[]).map(function(c){
+        return '<div class="comp-card">'+
+          '<div class="comp-top">'+logoHTML(c.brand)+
+          '<div class="comp-name-block">'+
+            '<div class="comp-name">'+c.brand+'</div>'+
+            '<div class="comp-badges">'+
+              '<span class="cbadge '+(sC[c.sentiment]||'')+'">'+c.sentiment+'</span>'+
+              '<span class="cbadge '+(bC[c.buzz_level]||'')+'">buzz: '+c.buzz_level+'</span>'+
+              '<span class="cbadge '+(tC[c.threat_level]||'')+'">threat: '+c.threat_level+'</span>'+
+            '</div></div></div>'+
+          '<div class="comp-find">'+c.key_finding+'</div>'+
+          (c.consumer_quote?'<div class="comp-q">"'+c.consumer_quote+'"</div>':'')+
+        '</div>';
+      }).join('');
+    }
+
+    document.getElementById('a2-pcomp').innerHTML = renderComp(d.pediasure_competitors);
+    document.getElementById('a2-popp').innerHTML = '<div style="font-size:12px;color:var(--text);line-height:1.6">'+(d.pediasure_opportunity||'—')+'</div>';
+    document.getElementById('a2-ecomp').innerHTML = renderComp(d.ensure_competitors);
+    document.getElementById('a2-eopp').innerHTML = '<div style="font-size:12px;color:var(--text);line-height:1.6">'+(d.ensure_opportunity||'—')+'</div>';
+
+    var vC={surging:'#EF4444',rising:'#FBBF24',stable:'#94A3B8'};
+    var catL={pediasure:'👶 PediaSure',ensure:'💪 Ensure',both:'🔁 Both'};
+    document.getElementById('a2-trends').innerHTML = (d.trends||[]).map(function(t){
+      return '<div class="ts"><span style="font-size:14px;color:'+(vC[t.velocity]||'#94A3B8')+'">▲</span><div style="flex:1"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span class="tk">'+t.keyword+'</span><span class="tcat">'+(catL[t.category]||t.category)+'</span></div><div class="tdet">'+t.context+'</div><div style="font-size:10px;color:var(--dim);margin-top:3px">'+t.opportunity+'</div></div><span style="font-size:9px;font-weight:600;color:'+(vC[t.velocity]||'#94A3B8')+'">'+t.velocity.toUpperCase()+'</span></div>';
+    }).join('');
+
+    document.getElementById('a2-action').innerHTML = '<div style="font-size:12px;color:var(--text);line-height:1.6">'+(d.priority_action||'—')+'</div>';
+    document.getElementById('a2-ctx').innerHTML = '<div style="font-size:11px;color:var(--muted);line-height:1.6">'+(d.market_context||'—')+'</div>';
+
+    var total2 = (d.pediasure_competitors||[]).length+(d.ensure_competitors||[]).length;
+    document.getElementById('d2-br').textContent = total2;
+    document.getElementById('d2-tr').textContent = (d.trends||[]).length;
+    setChip('ch2','done');
+    document.getElementById('a2-lu').textContent = 'Updated '+new Date().toLocaleTimeString('en-AU');
+
+    var hi = [].concat(d.pediasure_competitors||[],d.ensure_competitors||[]).find(function(c){return c.threat_level==='high';});
+    if (hi) addFeed('neg','High-threat competitor: <strong>'+hi.brand+'</strong> — '+hi.key_finding.substring(0,70)+'…','Agent 02 · Competitor alert');
+    var su = (d.trends||[]).find(function(t){return t.velocity==='surging';});
+    if (su) addFeed('trend','Surging trend: <strong>'+su.keyword+'</strong> — '+su.context.substring(0,70)+'…','Agent 02 · Trend radar');
+    addFeed('neu','Competitor scan complete — '+total2+' brands tracked','Agent 02 · Competitor intel');
+    logLine('log2','Scan complete — '+total2+' brands tracked.','d');
+  } catch(e) {
+    document.getElementById('a2-pcomp').innerHTML = emHTML(e.message);
+    document.getElementById('a2-ecomp').innerHTML = emHTML(e.message);
+    logLine('log2','Error: '+e.message,'e');
+    setChip('ch2','idle');
+  }
+  if (btn) btn.disabled = false;
+}
+
+function clearA2() {
+  AD.a2=null;
+  ['a2-pcomp','a2-ecomp','a2-trends','a2-popp','a2-eopp','a2-action','a2-ctx'].forEach(function(id){document.getElementById(id).innerHTML='<div class="empty">Cleared</div>';});
+  clrLog('log2'); setChip('ch2','idle');
+}
+
+// ── AGENT 3 ────────────────────────────────────────────
+async function runA3(silent) {
+  var btn = document.getElementById('btn-a3');
+  if (btn) btn.disabled = true;
+  setChip('ch3','running'); clrLog('log3');
+  if (!silent) nav('a3');
+  ['a3-ig','a3-nl','a3-ca'].forEach(function(id){document.getElementById(id).innerHTML=ldHTML('');});
+
+  logLine('log3','Reading insights from Agent 01 & 02…','a');
+  var ctx = 'Generate content for Abbott Nutrition Australia (Ensure, PediaSure, Glucerna).';
+  if (AD.a1&&AD.a1.topics&&AD.a1.topics[0]) ctx += ' Key consumer theme: '+AD.a1.topics[0].title+' — '+AD.a1.topics[0].description+'.';
+  if (AD.a1&&AD.a1.reviews&&AD.a1.reviews[0]) ctx += ' Consumer quote: "'+AD.a1.reviews[0].text+'".';
+  if (AD.a2&&AD.a2.trends&&AD.a2.trends[0]) ctx += ' Rising trend: '+AD.a2.trends[0].keyword+' — '+AD.a2.trends[0].context+'.';
+
+  var sys = `You are a creative marketing AI for Abbott Nutrition Australia. Generate content ideas grounded in real consumer insights.
+Return ONLY valid JSON, no markdown, no backticks:
+{"instagram":[{"type":"Educational","hook":"...","caption":"..."},{"type":"Lifestyle","hook":"...","caption":"..."},{"type":"UGC prompt","hook":"...","caption":"..."}],"newsletter":[{"subject":"...","opening":"..."},{"subject":"...","opening":"..."}],"campaigns":[{"title":"...","concept":"...","rationale":"..."},{"title":"...","concept":"...","rationale":"..."}]}`;
+
+  try {
+    logLine('log3','Generating Instagram captions & newsletter hooks…','a');
+    var raw = await callClaude(sys, ctx);
+    logLine('log3','Generating campaign angles…','a');
+    var d = parseJSON(raw); AD.a3 = d;
+
+    document.getElementById('a3-ig').innerHTML = (d.instagram||[]).map(function(i){
+      return '<div class="ci ci-ig"><div class="ci-type">'+i.type+'</div><div class="ci-text"><strong>'+i.hook+'</strong><br><br>'+i.caption+'</div></div>';
+    }).join('');
+    document.getElementById('a3-nl').innerHTML = (d.newsletter||[]).map(function(n){
+      return '<div class="ci ci-nl"><div class="ci-type">Subject line</div><div class="ci-text"><strong>'+n.subject+'</strong><br><br><span style="color:var(--muted)">'+n.opening+'</span></div></div>';
+    }).join('');
+    document.getElementById('a3-ca').innerHTML = (d.campaigns||[]).map(function(c){
+      return '<div class="ci ci-ca"><div class="ci-type">Campaign concept</div><div class="ci-text"><strong>'+c.title+'</strong><br><br>'+c.concept+'<br><br><span style="font-size:10px;color:var(--dim)">Why it works: '+c.rationale+'</span></div></div>';
+    }).join('');
+
+    document.getElementById('d3-id').textContent = (d.instagram||[]).length+(d.newsletter||[]).length;
+    document.getElementById('d3-ca').textContent = (d.campaigns||[]).length;
+    setChip('ch3','done');
+    document.getElementById('a3-lu').textContent = 'Updated '+new Date().toLocaleTimeString('en-AU');
+
+    if (d.instagram&&d.instagram[0]) addFeed('idea','New content idea: <strong>'+d.instagram[0].hook+'</strong>','Agent 03 · Content');
+    if (d.campaigns&&d.campaigns[0]) addFeed('idea','Campaign: <strong>'+d.campaigns[0].title+'</strong> — '+d.campaigns[0].concept.substring(0,60)+'…','Agent 03 · Campaign');
+    logLine('log3','Content generation complete.','d');
+  } catch(e) {
+    document.getElementById('a3-ig').innerHTML = emHTML(e.message);
+    logLine('log3','Error: '+e.message,'e');
+    setChip('ch3','idle');
+  }
+  if (btn) btn.disabled = false;
+}
+
+function clearA3() {
+  AD.a3=null;
+  ['a3-ig','a3-nl','a3-ca'].forEach(function(id){document.getElementById(id).innerHTML='<div class="empty">Cleared</div>';});
+  clrLog('log3'); setChip('ch3','idle');
+}
+</script>
+</body>
+</html>
